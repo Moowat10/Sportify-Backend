@@ -71,8 +71,8 @@ module.exports = gql`
   input newComplexInput {
     name: String!
     description: String
-    address: Address!
-    geo: GeoLocation!
+    address: addressInput!
+    geo: geoLocationInput!
     contactInfo: [String!]!
     id_owner: String!
     isMembersOnly: Boolean!
@@ -87,7 +87,6 @@ module.exports = gql`
     isMembersOnly: Boolean
     additionalEntryFees: Float
     courts: [newCourtInput]
-    address: addressInput
     geo: geoLocationInput
   }
   type Court {
