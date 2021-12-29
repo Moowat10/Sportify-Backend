@@ -1,184 +1,57 @@
-const mongoose = require('mongoose')
+const admin = require("firebase-admin");
+const firebaseConfig = {
+  apiKey: "AIzaSyAjGNLOdekHrg9i-CC5AIjrvUpDWb-y3HI",
+  authDomain: "sportify-32149.firebaseapp.com",
+  projectId: "sportify-32149",
+  storageBucket: "sportify-32149.appspot.com",
+  messagingSenderId: "256385313302",
+  appId: "1:256385313302:web:81ad728e39b8a39da5e337",
+  measurementId: "G-PZ85HEJ30N",
+};
+admin.initializeApp(firebaseConfig);
 
-const user = mongoose.Schema({
-    firstname: {
-        type: String,
-        required: true
-    },
-    lastname: String,
-    gender: String,
-    email: {
-        type: String,
-        required: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    DOB: String,
-    nationality: String,
-    phone: String,
-    address: {
-        country: String,
-        city: String,
-        street: String,
-        zipCode: String,
-    },
-    geoLocation: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: false,
-        ref: 'geolocation'
-    },
-    favCategories: [ {type: mongoose.Schema.Types.ObjectId,
-                    required: true,
-                    ref: 'categorie'} ],
-    socialToken: {
-        posting: Boolean,
-        sharing: Boolean,
-        commenting: Boolean
-    },
-    status: {
-        isActive: Boolean,
-        lastSeen: String
-    },
-    followersList: [ {type: String} ],
-    followingList: [ {type: String} ],
-    completeReg: {
-        type: Boolean,
-        required: true
-    },
-    role: {
-        type: String,
-        required: true
-    }
+const firestore = admin.firestore();
 
-} , {timestamps: true})
+const setDoc = async (collection, doc, id) => {
+  const res = await firestore
+    .collection(collection)
+    .doc(id)
+    .set(doc)
+    .then(console.log("Add Success"))
+    .catch((err) => {
+      console.log(err);
+    });
+};
+const getDoc = async (collection, id) => {
+  const Ref = firestore.collection(collection);
+  const doc = await Ref.doc(id).get();
+  return doc.data();
+};
+const getDocs = async (collection, whereObj, limit) => {
+  const Ref = firestore.collection(collection);
+  const snapshot = await Ref.where(whereObj.field, whereObj.op, whereObj.val)
+    .limit(limit)
+    .get();
+  if (snapshot.empty) {
+    console.log("No matching documents.");
+    return null;
+  }
 
-const employee = mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'user'
-    },
-    empType: {
-        type: String,
-        required: true
-    },
-    permissions: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'permission'
-    },
-    nationalID: {
-        type: String,
-        required: true
-    },
-    storesIDList: [ {type: String} ],
-    businessId: String,
-    businessPhone: String
+  let list = [];
+  snapshot.forEach((doc) => {
+    list.push(doc);
+  });
+  return list;
+};
 
-} , {timestamps: true})
+async function updateDocInDatabase(tableName, id, updatedData) {
+  const Ref = firestore.collection(tableName).doc(id);
 
-const store = mongoose.Schema({
-     ownerId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'user'
-    },
-    name: {
-        type: String,
-        required: true,
-    },
-    verefied: {
-        type: Boolean,
-        required: false
-    },
-    employeesId: [ { type: String } ],
-    bio: String,
-    district: { type: String,
-        	   required: true },
-    geoLocation: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: false,
-        ref: 'geolocation'
-    },
-    workingHours: String,
-    holidays: [{type: String}],
-    fax: [{type: String}],
-    landLines: [{type: String}],
-    mobiles: [{type: String}],
-    emails: [{type: String}],
-    ratingsId: [{type: String}],
-    isDelivering: Boolean,
-    paymentType: String,
-    deliveryRange: Number,
-    photosUrls: [{type: String}],
-    videosUrls: [{type: String}],
-    categoryId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'categorie'
-    },
-    servicesId: [ {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'service'
-    } ],
-    promotions: [ { serviceId: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    required: true,
-                    ref: 'service'
-                    },
-                    discount: {
-                        type: Number,
-                        required: true
-                    } } ],
-    analyticsId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'analytic'
-    },
-    generalPolicy: {
-        type: String,
-        required: true
-    }
-
-} , {timestamps: true})
-
-const permission = mongoose.Schema({
-    accessOrders: Boolean,
-    acceptOrders: Boolean,
-    chatWithClients: Boolean,
-    modifyStoreInfo: Boolean,
-    servicesManagement: Boolean,
-    socialMediaManagement: Boolean,
-    analyticsAndPerformance: Boolean
-})
-
-const rating = mongoose.Schema({
-    storeId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'store'
-    },
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'user'
-    },
-    stars: { type: Number,
-            required: true},
-    comment: String,
-} , {timestamps: true})
-
-const User = mongoose.model('user', user)
-const Store = mongoose.model('store', store)
-const connect = () => {
-   return mongoose.connect('mongodb+srv://OmarTarekHarbMaster:4010063@basecluster.xuh3b.mongodb.net/serv-u?retryWrites=true&w=majority')
+  const res = await Ref.update(updatedData);
 }
-
 module.exports = {
-        User: User,
-        Store: Store,
-        connect: connect
-}
+  getDoc: getDoc,
+  get: getDocs,
+  create: setDoc,
+  update: updateDocInDatabase,
+};

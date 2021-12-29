@@ -3,7 +3,6 @@ const gql = require("graphql-tag");
 module.exports = gql`
   enum Payments {
     NOT_PAID
-    PENDING
     PAID
   }
 
@@ -14,23 +13,16 @@ module.exports = gql`
     address: Address!
     phone: String!
   }
-  type Week {
-    saturday: [From_To_Timestamps]!
-    sunday: [From_To_Timestamps]!
-    monday: [From_To_Timestamps]!
-    tuesday: [From_To_Timestamps]!
-    wednesday: [From_To_Timestamps]!
-    thursday: [From_To_Timestamps]!
-    friday: [From_To_Timestamps]!
+
+  type Sport {
+    title: String!
+    teamCount: [Int]
+    image: String
+    coverImage: String
   }
-  input weekInput {
-    saturday: [from_to_timestampsInput]
-    sunday: [from_to_timestampsInput]
-    monday: [from_to_timestampsInput]
-    tuesday: [from_to_timestampsInput]
-    wednesday: [from_to_timestampsInput]
-    thursday: [from_to_timestampsInput]
-    friday: [from_to_timestampsInput]
+  input newSportInput {
+    title: String!
+    teamCount: [Int]
   }
   type Address {
     country: String
@@ -55,25 +47,37 @@ module.exports = gql`
     address: addressInput!
     time: from_to_timestampsInput!
   }
-
+  type GeoLocation {
+    lat: String!
+    lng: String!
+  }
+  input geoLocationInput {
+    lat: String!
+    lng: String!
+  }
   type Complex {
     id: ID!
     id_fb: String!
     name: String!
     description: String
-    address: Address
-    contactInfo: String!
+    address: Address!
+    geo: GeoLocation!
+    contactInfo: [String!]!
     id_owner: String!
     isMembersOnly: Boolean!
     additionalEntryFees: Float
     courts: [Court]
   }
   input newComplexInput {
-    id_fb: String!
     name: String!
-    contactInfo: String!
+    description: String
+    address: Address!
+    geo: GeoLocation!
+    contactInfo: [String!]!
     id_owner: String!
     isMembersOnly: Boolean!
+    additionalEntryFees: Float
+    courts: [newCourtInput]
   }
   input updateComplexInput {
     name: String
@@ -83,26 +87,26 @@ module.exports = gql`
     isMembersOnly: Boolean
     additionalEntryFees: Float
     courts: [newCourtInput]
+    address: addressInput
+    geo: geoLocationInput
   }
   type Court {
     id: ID!
     id_fb: String!
-    id_cmplx: String
-    sport: String!
-    number: String
-    week: Week
-    location: String!
+    id_cmplx: String!
+    sport: [Sport]!
+    number: String!
+    address: Address!
   }
   input newCourtInput {
     id_fb: String!
     sport: String!
-    location: String!
+    address: addressInput!
   }
   input updateCourtInput {
     id_cmplx: String
     sport: String
     number: String
-    week: weekInput
     location: String
   }
   type Booking {
@@ -114,7 +118,6 @@ module.exports = gql`
     fromTimeStamp: String
     toTimeStamp: String
     paymentStatus: Payments!
-    tempLocked: String
     reservationTimeStamp: String!
     totalFee: Float!
     appliedDiscount: Float
@@ -182,6 +185,7 @@ module.exports = gql`
     uid: String!
   }
   input updateUserInput {
+    uid: String!
     firstname: String
     lastname: String
     phone: String
@@ -234,7 +238,7 @@ module.exports = gql`
     updateComplex(input: updateComplexInput): Complex!
     deleteComplex(input: firebaseDocIDInput): Boolean!
   }
-  type Subscriptions {
+  type Subscription {
     temporaryBook(input: newBookingInput): Booking
   }
 `;
