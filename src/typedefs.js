@@ -6,14 +6,6 @@ module.exports = gql`
     PAID
   }
 
-  interface Person {
-    firstname: String!
-    lastname: String!
-    email: String!
-    address: Address!
-    phone: String!
-  }
-
   type Sport {
     title: String!
     teamCount: [Int]
@@ -70,7 +62,6 @@ module.exports = gql`
   }
   input newComplexInput {
     name: String!
-    description: String
     address: addressInput!
     geo: geoLocationInput!
     contactInfo: [String!]!
@@ -78,8 +69,10 @@ module.exports = gql`
     isMembersOnly: Boolean!
     additionalEntryFees: Float
     courts: [newCourtInput]
+    description: String
   }
   input updateComplexInput {
+    id_fb: String!
     name: String
     description: String
     address: addressInput
@@ -98,8 +91,9 @@ module.exports = gql`
     address: Address!
   }
   input newCourtInput {
-    id_fb: String!
-    sport: String!
+    id_cmplx: String!
+    sport: [newSportInput]!
+    number: String!
     address: addressInput!
   }
   input updateCourtInput {
@@ -107,11 +101,12 @@ module.exports = gql`
     sport: String
     number: String
     location: String
+    address: addressInput
   }
   type Booking {
     id: ID!
     id_fb: String!
-    id_cmplx: String
+    id_cmplx: String!
     id_court: String!
     uid: String!
     fromTimeStamp: String
@@ -124,7 +119,7 @@ module.exports = gql`
   }
   input newBookingInput {
     id_cmplx: String!
-    id_court: String
+    id_court: String!
     uid: String!
     paymentStatus: Payments!
     reservationTimeStamp: String!
@@ -132,9 +127,12 @@ module.exports = gql`
     fromTimeStamp: String
     toTimeStamp: String
     reservationLink: String!
+    appliedDiscount: Float
   }
   input updateBookingInput {
+    id_fb: String!
     id_cmplx: String
+    id_court: String
     fromTimeStamp: String
     toTimeStamp: String
     paymentStatus: Payments
@@ -144,7 +142,7 @@ module.exports = gql`
     reservationLink: String
   }
 
-  type User implements Person {
+  type User {
     id: ID!
     uid: String!
     firstname: String!
@@ -176,8 +174,12 @@ module.exports = gql`
     firstname: String!
     lastname: String!
     email: String!
-    phone: String!
     address: addressInput!
+    phone: String!
+    secondaryPhone: String
+    image: String
+    walletValue: Float
+    walletCurrency: String
     createdAt: String!
   }
   input userUIDInput {
@@ -219,7 +221,7 @@ module.exports = gql`
     id_fb: String!
   }
   type Query {
-    permanentlyBook(input: newBookingInput): Booking!
+    getUserByUID(input: firebaseDocIDInput): User!
     getAvaliableSlotsByTime(input: availableSlotsInput): [Court]!
     getBookedSlotsByCourt(input: firebaseDocIDInput): [From_To_Timestamps]
   }
@@ -236,8 +238,10 @@ module.exports = gql`
     newComplex(input: newComplexInput): Complex!
     updateComplex(input: updateComplexInput): Complex!
     deleteComplex(input: firebaseDocIDInput): Boolean!
+    newBooking(input: newBookingInput): Booking!
+    updateBooking(input: updateBookingInput): Booking
   }
   type Subscription {
-    temporaryBook(input: newBookingInput): Booking
+    newBookingListener: String!
   }
 `;

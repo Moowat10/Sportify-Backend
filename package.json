@@ -16,9 +16,10 @@
     "nodemon": "^1.19.4"
   },
   "dependencies": {
-    "apollo-server": "^3.5.0",
+    "apollo-server": "2.25.3",
     "date-fns": "^2.5.0",
-    "jsonwebtoken": "^8.5.1",
-    "firebase-admin": "^10.0.0"
+    "firebase": "^9.6.1",
+    "firebase-admin": "^10.0.0",
+    "jsonwebtoken": "^8.5.1"
   }
 }

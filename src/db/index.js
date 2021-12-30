@@ -1,4 +1,6 @@
-const admin = require("firebase-admin");
+const firebase = require("firebase/compat/app");
+require("firebase/compat/firestore");
+
 const firebaseConfig = {
   apiKey: "AIzaSyAjGNLOdekHrg9i-CC5AIjrvUpDWb-y3HI",
   authDomain: "sportify-32149.firebaseapp.com",
@@ -8,24 +10,62 @@ const firebaseConfig = {
   appId: "1:256385313302:web:81ad728e39b8a39da5e337",
   measurementId: "G-PZ85HEJ30N",
 };
-admin.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 
-const firestore = admin.firestore();
+const firestore = firebase.firestore();
 
 const setDoc = async (collection, doc, id) => {
-  const res = await firestore
-    .collection(collection)
-    .doc(id)
-    .set(doc)
-    .then(console.log("Add Success"))
-    .catch((err) => {
-      console.log(err);
-    });
+  let temp = doc;
+  if (doc.address) {
+    const address = doc.address;
+    doc["country"] = address.country;
+    doc["city"] = address.city;
+    doc["district"] = address.district;
+    delete doc.address;
+  }
+  let res;
+  if (id) {
+    res = await firestore.collection(collection).doc(id);
+    const newDoc = res
+      .set(doc)
+      .then(console.log("Add Success"))
+      .catch((err) => {
+        console.log(err);
+      });
+  } else {
+    res = await firestore.collection(collection).doc();
+    const newDoc = res
+      .set(doc)
+      .then(console.log("Add Success"))
+      .catch((err) => {
+        console.log(err);
+      });
+    const docRef = await res.get();
+    let data = docRef.data();
+    data["id_fb"] = docRef.id;
+    if (data.address) {
+      delete data.country;
+      delete data.city;
+      delete data.district;
+      data["address"] = temp.address;
+    }
+    console.log(data);
+    return data;
+  }
+  let data = await res.get().data();
+  if (data.address) {
+    delete data.country;
+    delete data.city;
+    delete data.district;
+    data["address"] = temp.address;
+  }
+  return data;
+  //console.log(res);
 };
 const getDoc = async (collection, id) => {
   const Ref = firestore.collection(collection);
   const doc = await Ref.doc(id).get();
-  return doc.data();
+  return doc;
 };
 const getDocs = async (collection, whereObj, limit) => {
   const Ref = firestore.collection(collection);
@@ -48,6 +88,10 @@ async function updateDocInDatabase(tableName, id, updatedData) {
   const Ref = firestore.collection(tableName).doc(id);
 
   const res = await Ref.update(updatedData);
+
+  const updated = await Ref.get();
+
+  return updated;
 }
 module.exports = {
   getDoc: getDoc,
