@@ -23,6 +23,13 @@ const setDoc = async (collection, doc, id) => {
     doc["district"] = address.district;
     delete doc.address;
   }
+  if (doc.managerOfficeAddress) {
+    const managerOfficeAddress = doc.managerOfficeAddress;
+    doc["country"] = managerOfficeAddress.country;
+    doc["city"] = managerOfficeAddress.city;
+    doc["district"] = managerOfficeAddress.district;
+    delete doc.managerOfficeAddress;
+  }
   let res;
   if (id) {
     res = await firestore.collection(collection).doc(id);
@@ -52,14 +59,8 @@ const setDoc = async (collection, doc, id) => {
     console.log(data);
     return data;
   }
-  let data = await res.get().data();
-  if (data.address) {
-    delete data.country;
-    delete data.city;
-    delete data.district;
-    data["address"] = temp.address;
-  }
-  return data;
+
+  return doc;
   //console.log(res);
 };
 const getDoc = async (collection, id) => {
@@ -93,9 +94,18 @@ async function updateDocInDatabase(tableName, id, updatedData) {
 
   return updated;
 }
+async function deleteDocInDatabase(collection, id) {
+  try {
+    const res = await firestore.collection(collection).doc(id).delete();
+  } catch (err) {
+    return false;
+  }
+  return true;
+}
 module.exports = {
   getDoc: getDoc,
   get: getDocs,
   create: setDoc,
   update: updateDocInDatabase,
+  delete: deleteDocInDatabase,
 };

@@ -155,6 +155,9 @@ module.exports = gql`
     walletValue: Float
     walletCurrency: String
     createdAt: String!
+    officePhone: String
+    managerOfficeAddress: Address
+    complexIDs: [String]
   }
   input userInput {
     uid: String
@@ -196,6 +199,9 @@ module.exports = gql`
     image: String
     walletValue: Float
     walletCurrency: String
+    officePhone: String
+    managerOfficeAddress: addressInput
+    complexIDs: [String]
   }
 
   type BusinessOwner {
@@ -207,12 +213,13 @@ module.exports = gql`
   }
 
   input newBusinessOwnerInput {
-    user: userInput!
+    user: newUserInput!
     officePhone: String!
     managerOfficeAddress: addressInput!
     complexIDs: [String]
   }
   input updateBusinessOwnerInput {
+    uid: String!
     officePhone: String
     managerOfficeAddress: addressInput
     complexIDs: [String]
@@ -229,17 +236,17 @@ module.exports = gql`
   type Mutation {
     newUser(input: newUserInput): User!
     updateUser(input: updateUserInput): User!
-    deleteUser(input: userUIDInput): Boolean!
+    deleteUser(input: userUIDInput): Boolean
     newBusinessOwner(input: newBusinessOwnerInput): BusinessOwner!
-    updateBusinessOwner(input: updateBusinessOwnerInput): BusinessOwner!
     newCourt(input: newCourtInput): Court!
     updateCourt(input: updateCourtInput): Court!
-    deleteCourt(input: firebaseDocIDInput): Boolean!
+    deleteCourt(input: firebaseDocIDInput): Boolean
     newComplex(input: newComplexInput): Complex!
     updateComplex(input: updateComplexInput): Complex!
-    deleteComplex(input: firebaseDocIDInput): Boolean!
+    deleteComplex(input: firebaseDocIDInput): Boolean
     newBooking(input: newBookingInput): Booking!
     updateBooking(input: updateBookingInput): Booking
+    deleteBooking(input: firebaseDocIDInput): Boolean
   }
   type Subscription {
     newBookingListener: String!
