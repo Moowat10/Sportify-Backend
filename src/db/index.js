@@ -69,20 +69,51 @@ const getDoc = async (collection, id) => {
   return doc;
 };
 const getDocs = async (collection, whereObj, limit) => {
+  var isArr = whereObj instanceof Array;
+  var isArr = Array.isArray(whereObj);
+  let snapshot;
   const Ref = firestore.collection(collection);
-  const snapshot = await Ref.where(whereObj.field, whereObj.op, whereObj.val)
-    .limit(limit)
-    .get();
-  if (snapshot.empty) {
-    console.log("No matching documents.");
-    return null;
-  }
+  if (!isArr) {
+    if (limit) {
+      snapshot = await Ref.where(whereObj.field, whereObj.op, whereObj.val)
+        .limit(limit)
+        .get();
+    } else {
+      snapshot = await Ref.where(
+        whereObj.field,
+        whereObj.op,
+        whereObj.val
+      ).get();
+    }
+    if (snapshot.empty) {
+      console.log("No matching documents.");
+      return null;
+    }
 
-  let list = [];
-  snapshot.forEach((doc) => {
-    list.push(doc);
-  });
-  return list;
+    let list = [];
+    snapshot.forEach((doc) => {
+      list.push(doc);
+    });
+    return list;
+  } else {
+    snapshot = await Ref.where(
+      whereObj[0].field,
+      whereObj[0].op,
+      whereObj[0].val
+    ).where(whereObj[1].field, whereObj[1].op, whereObj[1].val);
+    if (limit) snapshot = await snapshot.limit(limit).get();
+    else snapshot = await snapshot.get();
+    if (snapshot.empty) {
+      console.log("No matching documents.");
+      return null;
+    }
+
+    let list = [];
+    snapshot.forEach((doc) => {
+      list.push(doc);
+    });
+    return list;
+  }
 };
 
 async function updateDocInDatabase(tableName, id, updatedData) {

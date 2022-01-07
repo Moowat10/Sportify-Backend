@@ -15,16 +15,18 @@ module.exports = gql`
   input newSportInput {
     title: String!
     teamCount: [Int]
+    image: String
+    coverImage: String
   }
   type Address {
-    country: String
-    city: String
+    country: String!
+    city: String!
     district: String
   }
 
   input addressInput {
-    country: String
-    city: String
+    country: String!
+    city: String!
     district: String
   }
   type From_To_Timestamps {
@@ -89,12 +91,14 @@ module.exports = gql`
     sport: [Sport]!
     number: String!
     address: Address!
+    reservedTimes: [From_To_Timestamps]!
   }
   input newCourtInput {
     id_cmplx: String!
     sport: [newSportInput]!
     number: String!
     address: addressInput!
+    reservedTimes: [from_to_timestampsInput]!
   }
   input updateCourtInput {
     id_cmplx: String
@@ -102,6 +106,7 @@ module.exports = gql`
     number: String
     location: String
     address: addressInput
+    reservedTimes: [from_to_timestampsInput]
   }
   type Booking {
     id: ID!
@@ -227,9 +232,10 @@ module.exports = gql`
   input firebaseDocIDInput {
     id_fb: String!
   }
+
   type Query {
     getUserByUID(input: firebaseDocIDInput): User!
-    getAvaliableSlotsByTime(input: availableSlotsInput): [Court]!
+    getAvailableSlotsByTime(input: availableSlotsInput): [Court]!
     getBookedSlotsByCourt(input: firebaseDocIDInput): [From_To_Timestamps]
   }
 

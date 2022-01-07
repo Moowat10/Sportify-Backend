@@ -1,5 +1,6 @@
 const firestore = require("./db");
 const schedule = require("node-schedule");
+const { da } = require("date-fns/locale");
 /**
  * Anything Query / Mutation resolver
  * using a user for a DB query
@@ -14,6 +15,38 @@ module.exports = {
       const data = user.data();
       data["uid"] = input.uid;
       return data;
+    },
+    async getAvailableSlotsByTime(_, { input }) {
+      const list = [];
+      list.push({ field: "country", op: "==", val: input.address.country });
+      list.push({ field: "city", op: "==", val: input.address.city });
+      const courts = await firestore.get("courts", list);
+      const courtResults = courts.map((court) => {
+        const data = court.data();
+        data["address"] = { country: data.country, city: data.city };
+        delete data.country;
+        delete data.city;
+        data["id_fb"] = court.id;
+        console.log(data);
+        return data;
+      });
+      let isReserved = false;
+      const result = courtResults.map((result) => {
+        isReserved = false;
+        result.reservedTimes.forEach((time) => {
+          if (time === input.time.fromTimeStamp) {
+            isReserved = true;
+          }
+        });
+        if (!isReserved) return result;
+      });
+
+      return result;
+    },
+    async getBookedSlotsByCourt(_, { input }) {
+      const courtDoc = await firestore.getDoc("courts", input.id_fb);
+      const data = courtDoc.data();
+      return data.reservedTimes;
     },
   },
   Mutation: {
@@ -60,6 +93,7 @@ module.exports = {
       if (!input.courts) input["courts"] = "";
       if (!input.description) input["description"] = "";
       const complex = await firestore.create("complexes", input);
+
       return complex;
     },
     async updateComplex(_, { input }) {
